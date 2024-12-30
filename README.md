@@ -17,7 +17,7 @@ repo branches used in this guide:
 pkg install x11-repo
 ```
 ```
-pkg install build-essential gn libglvnd* libx11 libxcursor libxi xdg-utils
+pkg install build-essential binutils-is-llvm gn libglvnd* libsm libx11 libxcursor libxi python xdg-utils xorgproto
 ```
 
 2. clone skia and aseperite
