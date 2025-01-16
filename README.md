@@ -7,12 +7,12 @@ The building process requires around 8GB of empty storage.
 
 repo branches used in this guide:
 
-- Aseprite: `main` [`1ec76af`](https://github.com/aseprite/aseprite/tree/1ec76afeaf1bb4c16a4fc111dd0b3002040ea5ed)
+- Aseprite: `main` [`v1.3.11`](https://github.com/aseprite/aseprite/tree/v1.3.11)
 - Skia: `aseprite-m102` [`857111b`](https://github.com/aseprite/skia/tree/857111b32703e9e8cb14053e25f56b21d636a3c2)
 
 # Steps
 
-1. install essential packages for compilation 
+**1. install essential packages for compilation**
 ```
 pkg install x11-repo
 ```
@@ -20,7 +20,7 @@ pkg install x11-repo
 pkg install build-essential binutils-is-llvm gn libglvnd* libsm libx11 libxcursor libxi python xdg-utils xorgproto
 ```
 
-2. clone skia and aseperite
+**2. clone skia and aseperite**
 ```
 cd $HOME
 git clone --recursive https://github.com/aseprite/aseprite.git
@@ -34,7 +34,13 @@ cd skia
 python tools/git-sync-deps
 ```
 
-3. apply patches required to build
+**3. apply patches required to build**
+
+> **How to apply patches?**
+> 
+> 1. copy and paste all patches into a file in $HOME
+> 
+> 2. `patch -p0 < file`
 
 aseprite/third_party/libwebp/CMakeLists.txt
 ```diff
@@ -73,7 +79,7 @@ aseprite/laf/base/memory.cpp
 ```diff
 --- aseprite/laf/base/memory.cpp-old      2024-11-12 01:34:30.572760696 +1100
 +++ aseprite/laf/base/memory.cpp  2024-11-11 21:59:51.787887706 +1100
-@@ -301,6 +301,13 @@
+@@ -303,6 +303,13 @@
 
  #endif
 
@@ -87,7 +93,7 @@ aseprite/laf/base/memory.cpp
  void* base_aligned_alloc(std::size_t bytes, std::size_t alignment)
  {
  #if LAF_WINDOWS
-@@ -310,7 +317,7 @@
+@@ -312,7 +319,7 @@
    std::size_t misaligned = (bytes % alignment);
    if (misaligned > 0)
      bytes += alignment - misaligned;
@@ -113,9 +119,9 @@ aseprite/third_party/harfbuzz/src/hb.hh
 
 aseprite/laf/base/thread.cpp
 ```diff
---- aseprite/laf/base/thread.cpp-old	2024-11-12 18:00:13.921465234 +1100
-+++ aseprite/laf/base/thread.cpp	2024-11-12 19:44:43.821462842 +1100
-@@ -111,6 +111,8 @@
+--- aseprite/laf/base/thread.cpp-old
++++ aseprite/laf/base/thread.cpp
+@@ -113,6 +113,8 @@
  #endif
  }
  
@@ -128,8 +134,8 @@ aseprite/laf/base/thread.cpp
 
 deps/skia/src/ports/SkDebug_stdio.cpp
 ```diff
---- deps/skia/src/ports/SkDebug_stdio.cpp-old       2024-11-12 01:23:35.060760946 +1100
-+++ deps/skia/src/ports/SkDebug_stdio.cpp   2024-11-12 01:07:07.941801219 +1100
+--- deps/skia/src/ports/SkDebug_stdio.cpp-old
++++ deps/skia/src/ports/SkDebug_stdio.cpp
 @@ -6,7 +6,7 @@
   */
 
@@ -149,24 +155,24 @@ deps/skia/src/ports/SkDebug_stdio.cpp
 
 aseprite/laf/base/launcher.cpp (for desktop xdg-open)
 ```diff
---- aseprite/laf/base/launcher.cpp-old	2024-11-13 02:14:37.807500767 +1100
-+++ aseprite/laf/base/launcher.cpp	2024-11-13 02:15:29.651500747 +1100
-@@ -83,7 +83,7 @@
+--- aseprite/laf/base/launcher.cpp-old
++++ aseprite/laf/base/launcher.cpp
+@@ -81,7 +81,7 @@
    #if __APPLE__
-     ret = std::system(("open \"" + file + "\"").c_str());
+   ret = std::system(("open \"" + file + "\"").c_str());
    #else
--    ret = std::system(("setsid xdg-open \"" + file + "\"").c_str());
-+    ret = std::system(("setsid xdg-utils-xdg-open \"" + file + "\"").c_str());
+-  ret = std::system(("setsid xdg-open \"" + file + "\"").c_str());
++  ret = std::system(("setsid xdg-utils-xdg-open \"" + file + "\"").c_str());
    #endif
  
  #endif
-@@ -124,7 +124,7 @@
-     if (!base::is_directory(file))
-       file = base::get_file_path(file);
+@@ -123,7 +123,7 @@
+   if (!base::is_directory(file))
+     file = base::get_file_path(file);
  
--    const int ret = std::system(("setsid xdg-open \"" + file + "\"").c_str());
-+    const int ret = std::system(("setsid xdg-utils-xdg-open \"" + file + "\"").c_str());
-     return (ret == 0);
+-  const int ret = std::system(("setsid xdg-open \"" + file + "\"").c_str());
++  const int ret = std::system(("setsid xdg-utils-xdg-open \"" + file + "\"").c_str());
+   return (ret == 0);
  
    #endif
 
@@ -174,9 +180,9 @@ aseprite/laf/base/launcher.cpp (for desktop xdg-open)
 
 optional: patch for termux prefix paths (permission denials might happen if not applied)
 ```diff
---- aseprite/laf/base/fs_unix.h-old	2024-11-12 10:29:41.275809946 +1100
-+++ aseprite/laf/base/fs_unix.h	2024-11-12 10:30:05.603809937 +1100
-@@ -197,7 +197,7 @@
+--- aseprite/laf/base/fs_unix.h-old
++++ aseprite/laf/base/fs_unix.h
+@@ -188,7 +188,7 @@
    char* tmpdir = getenv("TMPDIR");
    if (tmpdir)
      return tmpdir;
@@ -186,8 +192,8 @@ optional: patch for termux prefix paths (permission denials might happen if not 
  
  std::string get_user_docs_folder()
 
---- aseprite/third_party/jpeg/jmemname.c-old	2024-11-12 14:46:43.816006705 +1100
-+++ aseprite/third_party/jpeg/jmemname.c	2024-11-12 10:35:06.523877784 +1100
+--- aseprite/third_party/jpeg/jmemname.c-old
++++ aseprite/third_party/jpeg/jmemname.c
 @@ -67,7 +67,7 @@
   */
  
@@ -198,8 +204,8 @@ optional: patch for termux prefix paths (permission denials might happen if not 
  
  static int next_file_num;       /* to distinguish among several temp files */
 
---- aseprite/third_party/libarchive/libarchive/archive_util.c-old	2024-11-12 10:48:51.826118583 +1100
-+++ aseprite/third_party/libarchive/libarchive/archive_util.c	2024-11-12 10:49:24.166118571 +1100
+--- aseprite/third_party/libarchive/libarchive/archive_util.c-old
++++ aseprite/third_party/libarchive/libarchive/archive_util.c
 @@ -404,7 +404,7 @@
  #ifdef _PATH_TMP
  		tmp = _PATH_TMP;
@@ -210,8 +216,8 @@ optional: patch for termux prefix paths (permission denials might happen if not 
  	archive_strcpy(temppath, tmp);
  	if (temppath->s[temppath->length-1] != '/')
 
---- aseprite/third_party/lua/loslib.c-old        2024-11-12 10:32:26.339877845 +1100
-+++ aseprite/third_party/lua/loslib.c    2024-11-12 10:33:30.323877821 +1100
+--- aseprite/third_party/lua/loslib.c-old
++++ aseprite/third_party/lua/loslib.c
 @@ -105,10 +105,10 @@
  
  #include <unistd.h>
@@ -226,8 +232,8 @@ optional: patch for termux prefix paths (permission denials might happen if not 
 
  #define lua_tmpnam(b,e) { \
 
---- aseprite/third_party/lua/luaconf.h-old	2024-11-12 21:07:04.385684895 +1100
-+++ aseprite/third_party/lua/luaconf.h	2024-11-12 21:09:20.765684843 +1100
+--- aseprite/third_party/lua/luaconf.h-old
++++ aseprite/third_party/lua/luaconf.h
 @@ -223,7 +223,7 @@
  
  #else			/* }{ */
@@ -237,8 +243,8 @@ optional: patch for termux prefix paths (permission denials might happen if not 
  #define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
  #define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
 
---- aseprite/src/app/font_path_unix.cpp-old	2024-11-12 21:10:58.769684805 +1100
-+++ aseprite/src/app/font_path_unix.cpp	2024-11-12 21:14:40.429684721 +1100
+--- aseprite/src/app/font_path_unix.cpp-old
++++ aseprite/src/app/font_path_unix.cpp
 @@ -27,8 +27,7 @@
  
    std::queue<std::string> q;
@@ -250,8 +256,8 @@ optional: patch for termux prefix paths (permission denials might happen if not 
    while (!q.empty()) {
      std::string fontDir = q.front();
 
---- deps/skia/src/core/SkVM.cpp-old	2024-11-12 14:16:05.844265984 +1100
-+++ deps/skia/src/core/SkVM.cpp	2024-11-12 14:18:54.854086279 +1100
+--- deps/skia/src/core/SkVM.cpp-old
++++ deps/skia/src/core/SkVM.cpp
 @@ -3054,7 +3054,7 @@
          SkASSERT(false == llvm::verifyModule(*mod, &llvm::outs()));
  
@@ -263,14 +269,14 @@ optional: patch for termux prefix paths (permission denials might happen if not 
              if (err) {
 ```
 
-4. build skia
+**4. build skia**
 ```
 cd $HOME/deps/skia
 gn gen out/Release-arm64 --args='is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_sfntly=false skia_use_freetype=true skia_use_harfbuzz=true skia_pdf_subset_harfbuzz=true skia_use_system_freetype2=false skia_use_system_harfbuzz=false cc="clang" cxx="clang++" extra_cflags_cc=["-stdlib=libc++"] extra_ldflags=["-stdlib=libc++"]'
 ninja -C out/Release-arm64 skia modules
 ```
 
-5. build aseprite
+**5. build aseprite**
 ```
 cd $HOME/aseprite
 mkdir build && cd build
@@ -292,7 +298,7 @@ ninja aseprite
 ninja install
 ```
 
-6. enjoy!
+**6. enjoy!**
 ```
 aseprite
 ```
